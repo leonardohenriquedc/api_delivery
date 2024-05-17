@@ -6,12 +6,13 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node --watch --no-warnings index.js "
+    "dev": "node --env-file config/.env --watch --no-warnings  index.js "
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^16.4.5",
     "fastify": "^4.27.0",
     "postgres": "^3.4.4"
   }
