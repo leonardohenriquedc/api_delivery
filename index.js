@@ -20,7 +20,21 @@ server.post('/update', (request, response)=>{
     }
 })
 
+server.post('/cadList', (request, response) => {
+    let cad = dataBase.cadView(request.body)
+    response.status(200).send(cad)
+})
 
+server.post('/delete', (request, response) => {
+    dataBase.delete(request.body)
+    response.status(200).send()
+})
+//-----------------
+
+server.post('/login', (request, response) => {
+    const data = request.body
+    
+})
 server.listen({
     port: 4047
 })

@@ -1,11 +1,9 @@
-import { info } from "console"
 import { randomUUID } from "crypto"
-
 export class DataBase{
+    // a chave para as infos sera o CPF
     #pessoas = new Map()
 
     create(infos){
-        let {email, senha, numeroTel} = infos
         const ID = randomUUID()
         Object.assign(infos, {'ID': ID})
         this.#pessoas.set(ID, infos)
@@ -21,4 +19,16 @@ export class DataBase{
         }
     }
 
+    cadView(id){
+        return this.#pessoas.get(id)
+    }
+
+    delete(id){
+        this.#pessoas.delete(id)
+        return 200
+    }
+
+    login(infos){
+        
+    }
 }
