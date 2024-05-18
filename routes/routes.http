@@ -1,14 +1,16 @@
 
-GET http://localhost:4047/
-
-###
 POST http://localhost:4047/create
 Content-Type: application/json
 
 {
-    "email": "leohencosta18@gmail.com",
-    "senha": "denver12@",
-    "numeroTel": "92992345446"
+    "nome":"Pedrosa",
+    "email": "exemplo@gmail.com",
+    "cpf": "12345678901",
+    "senha": "exemplo12@",
+    "numerocelular": "5592992345446",
+    "datanasc": "2004-06-08",
+    "seguimento": ["Diarista"],
+    "hashtag": ["Limpeza", "Cozinha"]
 }
 
 ###

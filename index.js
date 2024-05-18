@@ -1,14 +1,27 @@
 import fastify from "fastify";
-import { DataBase } from "./dataBases/dataBaseMemory.js";
+import { DataBase } from "./dataBases/dataBaseSql.js";
+import { Vdl } from "./validations/validationsCRUD.js";
 
 let dataBase = new DataBase()
 
 let server = fastify()
 
+let vdl = new Vdl()
+
 //Create CRUD
-server.post('/create', (request, response) => {
-    const sucess = dataBase.create(request.body)
-    response.send(sucess)
+server.post('/create', async(request, response) => {
+    let vdlC = vdl.vdlCreate(request.body)
+    if(vdlC == 404){
+        response.status(404).send()
+    }else{
+        let sucess = await dataBase.create(request.body)
+
+        if(sucess){
+            response.status(204).send()
+        }else{
+            response.status(404).send()
+        }
+    }
 })
 
 server.post('/update', (request, response)=>{
