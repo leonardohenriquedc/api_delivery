@@ -1,6 +1,6 @@
 export class Vdl {
     vdlCreate(infos){
-        let {nome, email, cpf, numerocelular, datanasc, hashtag, seguimento} = infos;
+        let {email, cpf, numerocelular, datanasc, hashtag, seguimento} = infos;
 
         //validação: CPF, numerocelular, datanasc, hastag e seguimento
         // cpf = 11

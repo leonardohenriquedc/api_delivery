@@ -23,3 +23,13 @@ Content-Type: application/json
     "numeroTel": "92992345446",
     "seguimento": "Tecnologias"
 }
+
+###
+POST http://localhost:4047/login
+Content-Type: application/json
+
+{
+    //"email": "leohencosta18@gmail.com",
+    "cpf": "05798081222",
+    "senha": "Denver18@"
+}
