@@ -13,7 +13,10 @@ let server = fastify({logger: true})
 let vdl = new Vdl()
 
 server.register(fastifyJwt, {
-    secret: process.env.SECRET_KEY
+    secret: process.env.SECRET_KEY,
+    sign: {
+        expiresIn: '5m'
+    }
 })
 
 //Create CRUD
@@ -39,6 +42,7 @@ server.post('/login', async (request, response) => {
     if(resL.status == 200){
         const name = resL.username[0].nome;
         try{
+            // adicionar numero de celular 
             const token = server.jwt.sign({name: name});
             response.status(200).send({token});
         }catch (error){
@@ -68,16 +72,37 @@ server.post('/update', async (request, response)=>{
     }
 })
 
-server.post('/cadList', (request, response) => {
-    let cad = dataBase.cadView(request.body) 
+server.post('/cadList', async (request, response) => {
+    let cad = await dataBase.cadView(request.body)
+    let { token, nivel } = request.body;
+    let decode = server.jwt.verify(token)
+    
+    if(decode.name != undefined && nivel == 'Administrador'){
+        if(cad.status == 200){
+            response.status(200).send(cad.datas)
+        }else{
+            response.status(404).send()
+        }
+    }else{
+        response.status(401).send()
+    }
 })
 
-server.post('/delete', (request, response) => {
-    dataBase.delete(request.body)
-    response.status(200).send()
+server.post('/delete', async(request, response) => {
+    let {token, value} = request.body;
+    let decode = server.jwt.verify(token);
+    if(decode != undefined){
+        let dataDelete = await dataBase.delete(value);
+        if(dataDelete.status == 200){
+            response.status(200).send();
+        }else{
+            response.status(404).send(dataDelete.error);
+        }
+    }else{
+        response.status(401).send();
+    }
 })
 //-----------------
-
 server.listen({
     port: 4047
 })

@@ -4,13 +4,14 @@ export class DataBase{
 
 // Infos: nome, cpf, numerocelular, datanasc    
     async create(infos){
-        let {nome, email, cpf, numerocelular, datanasc, hashtag, seguimento, senha} = infos
+        let {nome, cpf, email, numerocelular, datanasc, hashtag, seguimento, senha, nivel} = infos
         try{
-            await sql `INSERT INTO pessoas (nome, cpf, numerocelular, datanasc, email, senha) 
-                        VALUES (${nome}, ${cpf}, ${numerocelular}, ${datanasc}, ${email}, ${senha});`;
+            await sql `INSERT INTO pessoas (nome, numerocelular, datanasc, senha, email) 
+                        VALUES (${nome}, ${numerocelular}, ${datanasc}, ${senha}, ${email});`;
 
             await sql `INSERT INTO categSeg (hastag, keyCPF, seguimento) 
-                        VALUES (${hashtag}, ${cpf}, ${seguimento});`;
+                        VALUES (ARRAY${hashtag}, ${cpf}, ARRAY${seguimento});`;
+            await sql `INSERT INTOR niveis (keyCPF, nivel) VALUES (${cpf}, ${nivel});`;
             return true
         }catch (error){
             console.error('Deu ruim', error)
@@ -43,7 +44,7 @@ export class DataBase{
 
     async update(type, body){
         let newValue = body.newValue;
-        let validation = body.validation
+        let validation = body.validation;
         switch(type){
             case 'e':
                 try {
@@ -79,4 +80,24 @@ export class DataBase{
                 break
         }
     }
-}
+
+    async cadView(){
+        let datas = await sql `SELECT * FROM pessoas, niveis, categSeg;`;
+        if(datas.length != [] && datas.length != undefined && datas.length != null){
+            return {status: 200, datas: datas}
+        }else{
+            return {status: 404}
+        }
+    }
+
+    async delete(value){
+        try {
+            await sql `DELETE FROM niveis WHERE keyCPF = ${value};`;
+            await sql `DELETE FROM pessoas WHERE cpf = ${value};`;
+            await sql `DELETE FROM categSeg WHERE keyCPF = ${value};`;
+            return {status: 200}
+        }catch (error){
+            return {status: 404, error: error}
+        }
+    }
+} 

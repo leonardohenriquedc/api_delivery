@@ -10,7 +10,8 @@ Content-Type: application/json
     "numerocelular": "5592992345446",
     "datanasc": "2004-06-08",
     "seguimento": ["Diarista"],
-    "hashtag": ["Limpeza", "Cozinha"]
+    "hashtag": ["Limpeza", "Cozinha"],
+    //"nivel": profissional 
 }
 
 ###

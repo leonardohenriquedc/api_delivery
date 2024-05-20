@@ -81,4 +81,12 @@ export class tables{
 
         return seguimentos
     }
+
+    niveis(){
+        let niveis = [
+            'Administrador',
+            'Cliente',
+            'Profissional'
+        ]
+    }
 }
