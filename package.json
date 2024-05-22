@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node --env-file config/.env --watch --no-warnings  index.js "
+    "dev": "node --env-file config/.env --watch --no-warnings  index.js ",
+    "vercel-build": "npx dataBases deploy"
   },
   "keywords": [],
   "author": "",
