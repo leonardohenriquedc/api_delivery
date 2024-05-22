@@ -19,6 +19,10 @@ server.register(fastifyJwt, {
     }
 })
 
+server.get('/', (request, response) => {
+    response.status('200').send('deu bom')
+})
+
 //Create CRUD
 server.post('/create', async(request, response) => {
     let vdlC = vdl.vdlCreate(request.body)
