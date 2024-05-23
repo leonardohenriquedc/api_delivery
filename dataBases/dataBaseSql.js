@@ -82,7 +82,7 @@ export class DataBase{
     }
 
     async cadView(){
-        let datas = await sql `SELECT * FROM pessoas, niveis, categSeg;`;
+        let datas = await sql `SELECT DISTINCT * FROM pessoas JOIN categSeg ON pessoas.cpf = categSeg.keycpf JOIN niveis ON pessoas.cpf = niveis.keycpf;`;
         if(datas.length != [] && datas.length != undefined && datas.length != null){
             return {status: 200, datas: datas}
         }else{

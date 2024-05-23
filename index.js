@@ -77,15 +77,20 @@ server.post('/update', async (request, response)=>{
 })
 
 server.post('/cadList', async (request, response) => {
-    let cad = await dataBase.cadView(request.body)
     let { token, nivel } = request.body;
-    let decode = server.jwt.verify(token)
+    let decode = server.jwt.verify(token);
     
     if(decode.name != undefined && nivel == 'Administrador'){
+        let cad = await dataBase.cadView()
         if(cad.status == 200){
-            response.status(200).send(cad.datas)
+            let newToken = server.jwt.sign({name: decode.name})
+            let obj = {
+                token: newToken,
+                data: cad.datas
+            }
+            response.status(200).send(JSON.stringify(obj))
         }else{
-            response.status(404).send()
+            response.status(404).send(JSON.stringify({token: newToken}))
         }
     }else{
         response.status(401).send()
