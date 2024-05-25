@@ -1,44 +1,49 @@
 import { sql } from "../config/connection.js";
+import { vdlsInfos } from "../validations/validationsInfos.js";
 
 export class DataBase{
 
 // Infos: nome, cpf, numerocelular, datanasc    
     async create(infos){
-        let {nome, cpf, email, numerocelular, datanasc, hashtag, seguimento, senha, nivel} = infos
-        try{
-            await sql `INSERT INTO pessoas (nome, numerocelular, datanasc, senha, email) 
-                        VALUES (${nome}, ${numerocelular}, ${datanasc}, ${senha}, ${email});`;
-
-            await sql `INSERT INTO categSeg (hastag, keyCPF, seguimento) 
-                        VALUES (ARRAY${hashtag}, ${cpf}, ARRAY${seguimento});`;
-            await sql `INSERT INTOR niveis (keyCPF, nivel) VALUES (${cpf}, ${nivel});`;
-            return true
-        }catch (error){
-            console.error('Deu ruim', error)
-            return false
+        let {nome, cpf, email, numerocelular, datanasc, hashtag, categoria, senha, nivel} = infos
+        console.log(infos)
+        let hashPW = await vdlsInfos.createHash2({senha: senha});
+        if(hashPW.status === 200){
+            try{
+                await sql `INSERT INTO pessoas (nome, cpf, email, numerocelular, datanasc, senha) 
+                            VALUES (${nome}, ${cpf}, ${email}, ${numerocelular}, ${datanasc}, ${hashPW.senha});`;
+                await sql `INSERT INTO categSeg (hashtag, keyCPF, categoria) 
+                            VALUES (${sql.array(hashtag)}, ${cpf}, ${sql.array(categoria)});`;
+                await sql `INSERT INTO niveis (keyCPF, nivel) VALUES (${cpf}, ${nivel});`;
+                return {status: 200}
+            }catch (error){
+                return {status: 404, error: error}
+            } 
+        }else{
+            return {status: 500, error: hashPW.error}
         }
     }
 
     async login(infos){
-        if (infos.email == undefined){
-            let {cpf, senha} = infos
-
-            let result = await sql`SELECT * FROM pessoas WHERE cpf = ${cpf} and senha = ${senha}`
-            if(result.length != [] && result.length != undefined && result.length != null){
-                let username = await sql `SELECT nome FROM pessoas WHERE cpf = ${cpf} AND senha = ${senha}`
-                return {status: 200, username: username}
-            }else{
-                return 404
+        let {numero, senha} = infos
+        let result = await sql`SELECT * FROM pessoas WHERE numerocelular = ${numero};`;
+        if(result.length != [] && result.length != undefined && result.length != null){
+            try {
+                let hSenha = result[0].senha;
+                let hashSaltSenha = await vdlsInfos.hashCreate(hSenha);
+                
+                if(hashSaltSenha === senha){
+                    let user = await sql `SELECT nome, id, email FROM pessoas WHERE numerocelular = ${numero} AND senha = ${hSenha};`;
+                    
+                    return {status: 200, user: user[0]}
+                }else{
+                    return {status: 404}
+                }
+            } catch (error) {
+                return {status: 500};
             }
         }else{
-            let {email, senha} = infos
-
-            let result = await sql`SELECT * FROM pessoas WHERE email = ${email} AND senha = ${senha}`
-            if(result.length != [] && result.length != undefined && result.length != null){
-                return 200
-            }else{
-                return 404
-            }
+            return {status: 404}
         }
     }
 
@@ -93,11 +98,11 @@ export class DataBase{
     async delete(value){
         try {
             await sql `DELETE FROM niveis WHERE keyCPF = ${value};`;
-            await sql `DELETE FROM pessoas WHERE cpf = ${value};`;
             await sql `DELETE FROM categSeg WHERE keyCPF = ${value};`;
+            await sql `DELETE FROM pessoas WHERE cpf = ${value};`;
             return {status: 200}
         }catch (error){
             return {status: 404, error: error}
         }
     }
-} 
+}

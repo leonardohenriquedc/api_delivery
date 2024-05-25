@@ -69,7 +69,7 @@ export class tables{
     }
 
     Areas(){
-        let seguimentos = [
+        let categorias = [
             'Diaristas', 
             'TI', 
             'Marketing e Vendas', 
@@ -79,7 +79,7 @@ export class tables{
             'Engenharia'
         ]
 
-        return seguimentos
+        return categorias
     }
 
     niveis(){
@@ -88,5 +88,7 @@ export class tables{
             'Cliente',
             'Profissional'
         ]
+
+        return niveis
     }
 }

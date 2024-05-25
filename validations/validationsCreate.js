@@ -1,6 +1,6 @@
 export class Vdl {
-    vdlCreate(infos){
-        let {email, cpf, numerocelular, datanasc, hashtag, seguimento} = infos;
+    async vdlCreate(infos){
+        let {email, cpf, numerocelular, datanasc, hashtag, categoria} = infos;
 
         //validação: CPF, numerocelular, datanasc, hastag e seguimento
         // cpf = 11
@@ -33,10 +33,9 @@ export class Vdl {
 
         // Lth and Lsg is boolean: false or true
         let Lht = Array.isArray(hashtag)
-        let Lsg = Array.isArray(seguimento)
+        let Lsg = Array.isArray(categoria)
 
         if (LCpf !== 11 || LNC !== 13 || !LDnasc() || !Lht || !Lsg || !Leml) {
-            console.log('404')
             return 404;
         } else {
             return true;
