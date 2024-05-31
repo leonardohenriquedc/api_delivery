@@ -9,7 +9,7 @@ export class Vdl {
         let LNC = numerocelular.length;
         // datanasc = "YYYY-MM-DD"
         let LDnasc = () => {
-            // Primeiro, verifique o formato usando uma expressão regular
+            // Primeiro, verifique o formato da data usando uma expressão regular
             const regex = /^\d{4}-\d{2}-\d{2}$/;
             if (!regex.test(datanasc)) {
                 return false;
@@ -31,11 +31,7 @@ export class Vdl {
             return regex.test(email);
         }
 
-        // Lth and Lsg is boolean: false or true
-        let Lht = Array.isArray(hashtag)
-        let Lsg = Array.isArray(categoria)
-
-        if (LCpf !== 11 || LNC !== 13 || !LDnasc() || !Lht || !Lsg || !Leml) {
+        if (LCpf !== 11 || LNC !== 13 || !LDnasc() || !Leml) {
             return 404;
         } else {
             return true;

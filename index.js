@@ -3,6 +3,7 @@ import fastifyJwt from "fastify-jwt";
 import { DataBase } from "./dataBases/dataBaseSql.js";
 import { Vdl } from "./validations/validationsCreate.js";
 import dotenv from "dotenv";
+import { vdlsInfos } from "./validations/validationsInfos.js";
 
 dotenv.config()
 
@@ -22,7 +23,8 @@ server.register(fastifyJwt, {
 async function validationJwt(token){
     try {
         const vdlToken = server.jwt.verify(token);
-        if(vdlToken.name !== undefined){
+        console.log(vdlToken)
+        if(vdlToken.values.nome !== undefined){
             let newToken = server.jwt.sign({name: vdlToken.name})
             return {status: 200, token: newToken}
         }else{
@@ -35,7 +37,7 @@ async function validationJwt(token){
 
 //rota livre para testes 
 server.get('/crypto', async (request, response) => {
-    let value = await hashCreate('Ola mundo@123@Leo')
+    let value = await vdlsInfos.createHash2({senha: 'Ola mundo@123@Leo'})
     response.status('200').send(value)
 })
 
@@ -49,7 +51,7 @@ server.post('/create', async(request, response) => {
         if(sucess.status == 200){
             response.status(204).send()
         }else{
-            response.status(404).send('Deu ruim "else"', sucess.error)
+            response.status(404).send('Deu ruim', sucess.error)
         }
     }
 })
@@ -101,7 +103,7 @@ server.post('/update', async (request, response)=>{
 server.post('/cadList', async (request, response) => {
     let { token, nivel } = request.body;
     let decode = await validationJwt(token);
-    
+    console.log(decode)
     if(decode.status == 200 && nivel == 'Administrador'){
         let cad = await dataBase.cadView()
         if(cad.status == 200){

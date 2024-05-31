@@ -5,15 +5,13 @@ export class DataBase{
 
 // Infos: nome, cpf, numerocelular, datanasc    
     async create(infos){
-        let {nome, cpf, email, numerocelular, datanasc, hashtag, categoria, senha, nivel} = infos
+        let {nome, cpf, email, numerocelular, datanasc, senha, nivel} = infos
         console.log(infos)
         let hashPW = await vdlsInfos.createHash2({senha: senha});
         if(hashPW.status === 200){
             try{
                 await sql `INSERT INTO pessoas (nome, cpf, email, numerocelular, datanasc, senha) 
                             VALUES (${nome}, ${cpf}, ${email}, ${numerocelular}, ${datanasc}, ${hashPW.senha});`;
-                await sql `INSERT INTO categSeg (hashtag, keyCPF, categoria) 
-                            VALUES (${sql.array(hashtag)}, ${cpf}, ${sql.array(categoria)});`;
                 await sql `INSERT INTO niveis (keyCPF, nivel) VALUES (${cpf}, ${nivel});`;
                 return {status: 200}
             }catch (error){
@@ -30,7 +28,7 @@ export class DataBase{
         if(result.length != [] && result.length != undefined && result.length != null){
             try {
                 let hSenha = result[0].senha;
-                let hashSaltSenha = await vdlsInfos.hashCreate(hSenha);
+                let hashSaltSenha = await vdlsInfos.removeSalt(hSenha);
                 
                 if(hashSaltSenha === senha){
                     let user = await sql `SELECT nome, id, email FROM pessoas WHERE numerocelular = ${numero} AND senha = ${hSenha};`;

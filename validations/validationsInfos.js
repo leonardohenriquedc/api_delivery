@@ -2,8 +2,8 @@ import { sql } from "../config/connection.js";
 import crytpo from 'crypto';
 
 export class vdlsInfos{
-
-    static async hashCreate(values){
+    // Regex usado para extrair o salt e validar somente o hash em si. 
+    static async removeSalt(values){
         const regex = /^.{32}/
         const senhaSemSalt = values.replace(regex, '');
         
