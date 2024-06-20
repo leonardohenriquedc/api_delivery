@@ -66,7 +66,7 @@ server.post('/login', async (request, response) => {
         let resL = await dataBase.login(request.body)
         if(resL.status == 200){
             const user = resL.user;
-           
+            
             try{
                 // adicionar numero de celular 
                 const token = server.jwt.sign({values: user});
