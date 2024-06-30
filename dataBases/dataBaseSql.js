@@ -1,5 +1,5 @@
 import { sql } from "../config/connection.js";
-import { vdlsInfos } from "../validations/validationsInfos.js";
+import { Vdl } from "../validations/validationsInfos.js";
 
 export class DataBase{
 
@@ -7,7 +7,7 @@ export class DataBase{
     async create(infos){
         let {nome, cpf, email, numerocelular, datanasc, senha, nivel} = infos
         console.log(infos)
-        let hashPW = await vdlsInfos.createHash2({senha: senha});
+        let hashPW = await Vdl.createHash2({senha: senha});
         if(hashPW.status === 200){
             try{
                 await sql `INSERT INTO pessoas (nome, cpf, email, numerocelular, datanasc, senha) 
@@ -22,25 +22,60 @@ export class DataBase{
         }
     }
 
-    async login(infos){
-        let {numero, senha} = infos
-        let result = await sql`SELECT * FROM pessoas WHERE numerocelular = ${numero};`;
-        if(result.length != [] && result.length != undefined && result.length != null){
+    async login(infos, type){
+        let result;
+     
+        if(type === "number"){
+            let {identificador} = infos;
+
             try {
-                let hSenha = result[0].senha;
-                let hashSaltSenha = await vdlsInfos.removeSalt(hSenha);
-                
-                if(hashSaltSenha === senha){
-                    let user = await sql `SELECT nome, id, email FROM pessoas WHERE numerocelular = ${numero} AND senha = ${hSenha};`;
-                    
-                    return {status: 200, user: user[0]}
-                }else{
-                    return {status: 404}
-                }
+
+                result = await sql`SELECT * FROM pessoas WHERE numerocelular = ${identificador};`;
+
             } catch (error) {
-                return {status: 500};
+             
+                console.log(error);
             }
+
         }else{
+            let{identificador} = infos;
+
+            try {
+
+                result = await sql`SELECT * FROM pessoas WHERE email = ${identificador};`;
+
+            } catch (error) {
+
+                console.log(error);
+            }
+    
+        }
+        
+        if(result.length != [] && result.length != undefined && result.length != null){
+            let {senha} = infos;
+
+            let hSenha = result[0].senha;
+
+            let hashSaltSenha = await Vdl.removeSalt(hSenha);
+            
+            if(hashSaltSenha === senha){
+                let objUser = result[0];
+                
+                let user = {
+                    nome: objUser.nome,
+                    email: objUser.email,
+                    id: objUser.id
+                }
+
+                return {status: 200, user: user}
+                
+            }else{
+                
+                return {status: 401}
+            }
+            
+        }else{
+
             return {status: 404}
         }
     }
@@ -57,6 +92,7 @@ export class DataBase{
                     return error
                 }
                 break
+
             case 's':
                 try {
                     await sql `UPDATE pessoas SET senha  = ${newValue} WHERE email = ${validation};`;
@@ -65,6 +101,7 @@ export class DataBase{
                     return error
                 }
                 break
+
             case 'nm': 
                 try {
                     await sql `UPDATE pessoas SET nome  = ${newValue} WHERE senha = ${validation};`;
@@ -73,6 +110,7 @@ export class DataBase{
                     return error
                 }
                 break
+
             case 'nr':
                 try {
                     await sql `UPDATE pessoas SET numerocelular  = ${newValue} WHERE senha = ${validation};`;

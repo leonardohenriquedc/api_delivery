@@ -1,9 +1,8 @@
 import fastify from "fastify";
 import fastifyJwt from "fastify-jwt";
 import { DataBase } from "./dataBases/dataBaseSql.js";
-import { Vdl } from "./validations/validationsCreate.js";
 import dotenv from "dotenv";
-import { vdlsInfos } from "./validations/validationsInfos.js";
+import { Vdl } from "./validations/validationsInfos.js";
 
 dotenv.config()
 
@@ -22,101 +21,138 @@ server.register(fastifyJwt, {
 
 async function validationJwt(token){
     try {
+
         const vdlToken = server.jwt.verify(token);
-        console.log(vdlToken)
+
+        console.log(vdlToken);
+
         if(vdlToken.values.nome !== undefined){
+
             let newToken = server.jwt.sign({name: vdlToken.name})
             return {status: 200, token: newToken}
+
         }else{
+
             return {status: 401}
         }
     } catch (error) {
+
         return {status: 401, error: error}
     }
 }
 
 //rota livre para testes 
 server.get('/crypto', async (request, response) => {
-    let value = await vdlsInfos.createHash2({senha: 'Ola mundo@123@Leo'})
+    let value = await Vdl.createHash2({senha: 'Ola mundo@123@Leo'})
     response.status('200').send(value)
 })
 
 //Create CRUD
 server.post('/create', async(request, response) => {
-    let vdlC = await vdl.vdlCreate(request.body);
+    let vdlC = Vdl.vdlCreate(request.body);
+
     if(vdlC == 404){
-        response.status(404).send('Invalid')
+
+        response.status(404).send('Invalid');
     }else{
-        let sucess = await dataBase.create(request.body)
+
+        let sucess = await dataBase.create(request.body);
+
         if(sucess.status == 200){
-            response.status(204).send()
+
+            response.status(204).send();
+
         }else{
-            response.status(404).send('Deu ruim', sucess.error)
+
+            response.status(404).send('Deu ruim', sucess.error);
         }
     }
 })
 
-//ID e o cpf, 
+//
 server.post('/login', async (request, response) => {
-    let {numero, senha} = request.body;
-    //Regex para validar se e um hash SHA-256, boolean Value
-    const hashTest = /^[a-f0-9]{64}$/.test(senha);
-    
-    if(numero.length === 13 && hashTest){
-        let resL = await dataBase.login(request.body)
-        if(resL.status == 200){
-            const user = resL.user;
+    let vdlInfos  = Vdl.vdlIdeficador(request.body)
+
+    if(vdlInfos.status == 200){
+        let resL = await dataBase.login(request.body, vdlInfos.type);
+
+        if(resL.status == 200){ 
+
+        const user = resL.user;
+        
+        try{
             
-            try{
-                // adicionar numero de celular 
-                const token = server.jwt.sign({values: user});
-                response.status(200).send({token});
-            }catch (error){
-                console.log('Deu ruim', error);
-                response.status(404).send()
-            }
+            const token = server.jwt.sign({values: user});
+
+            response.status(200).send({token});
+
+        }catch (error){
+            console.log('Deu ruim', error);
+
+            response.status(404).send();
+        }
+        }else if(vdlInfos.status == 401){
+
+            response.status(401).send('Senha ou identificador incorretos');
         }else{
-            response.status(404).send('Deu ruim')
+
+            response.status(404).send("Usuario não encontrado");
         }
     }else{
-        response.status(404).send('Formato invalido ')
+        response.status(404).send("Dados em formato incorreto");
     }
 })
 
 server.post('/update', async (request, response)=>{
-    let {token} = request.body
-    let decode = validationJwt(token)
+    let {token} = request.body;
+
+    let decode = validationJwt(token);
+
     if(decode.status == 200){
+
         let {type, body} = request.body;
-        let value = await dataBase.update(type, body)
+
+        let value = await dataBase.update(type, body);
 
         if(value == 204){
+
             response.status(204).send(decode.token);
         }else{
+
             response.status(404).send()
         }
     }else{
+
         response.status(401).send()
     }
 })
 
 server.post('/cadList', async (request, response) => {
     let { token, nivel } = request.body;
+
     let decode = await validationJwt(token);
-    console.log(decode)
+
+    console.log(decode);
+
     if(decode.status == 200 && nivel == 'Administrador'){
-        let cad = await dataBase.cadView()
+
+        let cad = await dataBase.cadView();
+
         if(cad.status == 200){
+
             let obj = {
                 token: decode.token,
                 data: cad.datas
             }
-            response.status(200).send(JSON.stringify(obj))
+
+            response.status(200).send(JSON.stringify(obj));
         }else{
-            response.status(404).send(JSON.stringify({token: decode.token}))
+
+            response.status(404).send(JSON.stringify({token: decode.token}));
         }
     }else{
-        response.status(401).send()
+
+        response.status(401).send();
     }
 })
 

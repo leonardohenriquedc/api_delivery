@@ -5,4 +5,4 @@ dotenv.config();
 
 const URL = process.env.URL_CONECTION
 
-export const sql = postgres(URL, {ssl: 'import'})
+export const sql = postgres(URL, {ssl: 'import'});
