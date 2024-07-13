@@ -1,24 +1,127 @@
 import { sql } from "../config/connection.js";
 import { Vdl } from "../validations/validationsInfos.js";
+import { DataHora } from "./getDate.js";
 
 export class DataBase{
 
-// Infos: nome, cpf, numerocelular, datanasc    
-    async create(infos){
-        let {nome, cpf, email, numerocelular, datanasc, senha, nivel} = infos
-        console.log(infos)
-        let hashPW = await Vdl.createHash2({senha: senha});
-        if(hashPW.status === 200){
-            try{
-                await sql `INSERT INTO pessoas (nome, cpf, email, numerocelular, datanasc, senha) 
-                            VALUES (${nome}, ${cpf}, ${email}, ${numerocelular}, ${datanasc}, ${hashPW.senha});`;
-                await sql `INSERT INTO niveis (keyCPF, nivel) VALUES (${cpf}, ${nivel});`;
-                return {status: 200}
-            }catch (error){
-                return {status: 404, error: error}
-            } 
-        }else{
-            return {status: 500, error: hashPW.error}
+    async functionsCreate(){
+        try {
+            
+            let cargofuncao = await sql`SELECT * FROM cargofuncao`;
+
+            if(cargofuncao.length != [] && cargofuncao.length != undefined && cargofuncao.length != null){
+
+                return {
+                    status: 200, 
+                    cargofuncao: cargofuncao
+                }
+            }else{
+
+                return {
+                    status: 404 
+                }
+            }
+        } catch (error) {
+            console.log(error)
+
+            return {
+                status: 500,
+                error: error
+            }
+        }
+    }
+      
+    async create(infos, type){
+        if(type == 'col'){
+            const {infosTecnicas, endereco, infosPessoais} = infos;
+
+            const {nome, cpf, numeroCelular, email, senha} = infosPessoais;
+
+            const { nivel } = infosTecnicas;
+
+            const { ruaAv, numeroCasa, bairro, BlocoQuadraLote, cep } = endereco;
+
+            const data = new DataHora().capturandoData();
+
+            try {
+                
+                const vdlUniqueData = await sql `SELECT * FROM pessoas WHERE cpf = ${cpf}`;
+                console.log("Este e o valor enviado: " + vdlUniqueData)
+                if(vdlUniqueData.length === 0){
+
+                    const insertInfoPessoais = await sql `INSERT INTO pessoas(
+                        nome, 
+                        cpf, 
+                        numeroCelular, 
+                        senha, 
+                        dataCadastro, 
+                        id_cargoFuncao, 
+                        email
+                    )
+                    VALUES (
+                        ${nome}, 
+                        ${cpf}, 
+                        ${numeroCelular}, 
+                        ${senha}, 
+                        ${data}, 
+                        ${nivel.id_cargoFuncao}, 
+                        ${email}
+                    )
+                    RETURNING id_pessoas`;
+    
+                    const idPessoa = insertInfoPessoais[0].id_pessoas
+                
+                    console.log(idPessoa);
+    
+                    const consultCadPessoa = await sql `SELECT * FROM pessoas WHERE id_pessoas = ${idPessoa};`;
+
+                    if(consultCadPessoa[0].cpf === cpf){
+
+                        await sql `INSERT INTO endereco(
+                                ruaAv, 
+                                numeroCasa, 
+                                bairro, 
+                                BlocoQuadraLote, 
+                                cep, 
+                                id_pessoa
+                            )
+                            VALUES(
+                                ${ruaAv},
+                                ${numeroCasa},
+                                ${bairro},
+                                ${BlocoQuadraLote},
+                                ${cep},
+                                ${idPessoa}
+                            )`;
+
+                        return {
+                            status: 204
+                        }
+                    }else{
+
+                        return {
+                            status: 404, 
+                            error: "Erro ao encontrar usuario"
+                        }
+                    }
+                }else{
+
+                    return {
+                        status: 404, 
+                        error: "Cadastro ja existe"
+                    }
+                }
+              
+            } catch (error) {
+
+                console.log("Deu ruim paizao, catch: " + error)
+
+                return {
+                    status: 500, 
+                    error: error
+                }
+            }
+
         }
     }
 
@@ -43,7 +146,6 @@ export class DataBase{
             try {
 
                 result = await sql`SELECT * FROM pessoas WHERE email = ${identificador};`;
-
             } catch (error) {
 
                 console.log(error);
@@ -67,16 +169,23 @@ export class DataBase{
                     id: objUser.id
                 }
 
-                return {status: 200, user: user}
+                return {
+                    status: 200, 
+                    user: user
+                }
                 
             }else{
                 
-                return {status: 401}
+                return {
+                    status: 401
+                }
             }
             
         }else{
 
-            return {status: 404}
+            return {
+                status: 404
+            }
         }
     }
 
@@ -125,20 +234,36 @@ export class DataBase{
     async cadView(){
         let datas = await sql `SELECT DISTINCT * FROM pessoas JOIN categSeg ON pessoas.cpf = categSeg.keycpf JOIN niveis ON pessoas.cpf = niveis.keycpf;`;
         if(datas.length != [] && datas.length != undefined && datas.length != null){
-            return {status: 200, datas: datas}
+            return {
+                status: 200, 
+                datas: datas
+            }
         }else{
-            return {status: 404}
+            return {
+                
+                status: 404
+            
+            }
         }
     }
 
     async delete(value){
         try {
             await sql `DELETE FROM niveis WHERE keyCPF = ${value};`;
+
             await sql `DELETE FROM categSeg WHERE keyCPF = ${value};`;
+
             await sql `DELETE FROM pessoas WHERE cpf = ${value};`;
-            return {status: 200}
+
+            return {
+                status: 200
+            }
         }catch (error){
-            return {status: 404, error: error}
+
+            return {
+                status: 404,
+                error: error
+            }
         }
     }
 }

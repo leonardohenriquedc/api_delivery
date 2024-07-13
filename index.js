@@ -6,11 +6,9 @@ import { Vdl } from "./validations/validationsInfos.js";
 
 dotenv.config()
 
-let dataBase = new DataBase()
+let dataBase = new DataBase();
 
-let server = fastify({logger: true})
-
-let vdl = new Vdl()
+let server = fastify({logger: true});
 
 server.register(fastifyJwt, {
     secret: process.env.SECRET_KEY,
@@ -29,43 +27,78 @@ async function validationJwt(token){
         if(vdlToken.values.nome !== undefined){
 
             let newToken = server.jwt.sign({name: vdlToken.name})
-            return {status: 200, token: newToken}
+            return {
+                status: 200, 
+                token: newToken
+            }
 
         }else{
 
-            return {status: 401}
+            return {
+                status: 401
+            }
         }
     } catch (error) {
 
-        return {status: 401, error: error}
+        return {
+            status: 401, 
+            error: error
+        }
     }
 }
+  
+//Esta rota inicia a conexão com a API e envia informações para cadastro e login. 
+server.get("/initialize", async (request, response) => {
+    let funcoesLoginAndCreate = await dataBase.functionsCreate();
 
-//rota livre para testes 
-server.get('/crypto', async (request, response) => {
-    let value = await Vdl.createHash2({senha: 'Ola mundo@123@Leo'})
-    response.status('200').send(value)
+    if(funcoesLoginAndCreate.status === 200){
+
+        response.status(200).send(funcoesLoginAndCreate.cargofuncao);
+    }else if(funcoesLoginAndCreate.status === 404){
+
+        response.status(404).send();
+    }else{
+        
+        response.status(500).send();
+    }
 })
 
-//Create CRUD
-server.post('/create', async(request, response) => {
-    let vdlC = Vdl.vdlCreate(request.body);
+//Create CRUD, type == col é colaborador e, type == cli é cliente.
+server.post('/create/:type', async(request, response) => {
+    let typeCreate = request.params.type;
 
-    if(vdlC == 404){
+    server.log.info(`Este e o paramento enviado: ${typeCreate}`);
 
-        response.status(404).send('Invalid');
-    }else{
+    let vdlCreate;
 
-        let sucess = await dataBase.create(request.body);
+    let createCad;
 
-        if(sucess.status == 200){
+    if(typeCreate === 'col'){
 
-            response.status(204).send();
+        vdlCreate = Vdl.vdlCreateColaborador(request.body);
 
+        if(vdlCreate){
+
+            createCad = await dataBase.create(request.body, "col");
+
+            if(createCad.status == 204){
+
+                response.status(204).send();
+            }else{
+
+                response.status(404).send(createCad.error);
+            }
         }else{
 
-            response.status(404).send('Deu ruim', sucess.error);
+            response.status(404).send("Não passou pela validação");
         }
+
+    }else if(typeCreate === 'cli'){
+
+        vdlCreate = Vdl.vdlCreateCliente(request.body);
+    }else{
+
+        response.status(404).send("Paramento invalido: " + typeCreate);
     }
 })
 
@@ -82,7 +115,9 @@ server.post('/login', async (request, response) => {
         
         try{
             
-            const token = server.jwt.sign({values: user});
+            const token = server.jwt.sign({
+                values: user
+            });
 
             response.status(200).send({token});
 
@@ -99,6 +134,7 @@ server.post('/login', async (request, response) => {
             response.status(404).send("Usuario não encontrado");
         }
     }else{
+          
         response.status(404).send("Dados em formato incorreto");
     }
 })
@@ -158,15 +194,22 @@ server.post('/cadList', async (request, response) => {
 
 server.post('/delete', async(request, response) => {
     let {token, value} = request.body;
+
     let decode = validationJwt(token);
+
     if(decode.status == 200){
+
         let dataDelete = await dataBase.delete(value);
+
         if(dataDelete.status == 200){
+
             response.status(200).send(decode.token);
         }else{
+
             response.status(404).send({token: decode.token, error: dataDelete.error});
         }
     }else{
+
         response.status(401).send();
     }
 })
