@@ -48,7 +48,7 @@ async function validationJwt(token){
 }
   
 //Esta rota inicia a conexão com a API e envia informações para cadastro e login. 
-server.get("/initialize", async (request, response) => {
+server.get("/", async (request, response) => {
     let funcoesLoginAndCreate = await dataBase.functionsCreate();
 
     if(funcoesLoginAndCreate.status === 200){
