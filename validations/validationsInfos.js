@@ -16,7 +16,8 @@ export class Vdl{
             let salt = crytpo.randomBytes(16).toString('hex')
             let data = salt + hash;
 
-            return {status: 200, senha: data}
+
+            return {status: 200, senha: data, somHash: hash}
         } catch (error) {
             return {status: 500, error: error}
         }
@@ -49,7 +50,10 @@ export class Vdl{
         let {identificador, senha} = infos
 
         //Regex para validar se e um hash SHA-256, boolean Value
-        const hashTest = /^[a-f0-9]{64}$/.test(senha);
+        //const hashTest = /^[a-f0-9]{64}$/.test(senha);
+
+        // Expressão regular para validar se há somente numero e letras na string senha 
+        const regexSenha = /^[\p{L}0-9\s]+$/u.test(senha);
 
         //Regex para validar se há somente numeros em uma string
         const RegexVdlNumber = /^\d+$/.test(identificador);
@@ -57,16 +61,18 @@ export class Vdl{
         // Expressão regular para validar e-mail
         const RegexVdlEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identificador);
 
-        if(RegexVdlNumber && hashTest && identificador.length === 13){
+        if(RegexVdlNumber && regexSenha && identificador.length === 11){
             console.log(RegexVdlNumber, "deu bom pelo visto")
 
             return {status: 200, type: "number"}
             
-        }else if(RegexVdlEmail && hashTest){
+        }else if(RegexVdlEmail && regexSenha){
             
             return {status: 200, type: "email"}
         }else{
-                
+            console.log("Este e os resultados do regex")
+            console.log("Teste hash " + hashTest + "Regex Numero:" + RegexVdlNumber);
+
             return {status: 404}
         }
     }
@@ -89,9 +95,10 @@ class VdlInfos {
         // Expressão regular para validar e-mail
         const regexVdlEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
+        // Expressão regular para validar se há somente numero e letras na string senha 
         const regexSenha = /^[\p{L}0-9\s]+$/u.test(senha);
 
-        if(regexNome && regexCpf && regexNumeroCelular && regexVdlEmail && regexSenha && numeroCelular.length === 12 && cpf.length === 11){
+        if(regexNome && regexCpf && regexNumeroCelular && regexVdlEmail && regexSenha && numeroCelular.length === 11 && cpf.length === 11){
     
             return true; 
         }else{

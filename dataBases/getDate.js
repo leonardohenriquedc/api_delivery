@@ -1,4 +1,5 @@
 export class DataHora{
+
     constructor(dia, mes, ano, hora, min, second) {
         this.ano = ano;
 
@@ -10,7 +11,7 @@ export class DataHora{
 
         this.min = min;
 
-        this.second
+        this.second = second;
 
         this.fullYear = `${this.ano}-${this.mes}-${this.dia} ${this.hora}:${this.min}:${this.second}`;
     }

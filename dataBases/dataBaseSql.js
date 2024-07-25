@@ -111,7 +111,7 @@ export class DataBase{
                         error: "Cadastro ja existe"
                     }
                 }
-              
+            
             } catch (error) {
 
                 console.log("Deu ruim paizao, catch: " + error)
@@ -133,7 +133,9 @@ export class DataBase{
 
             try {
 
-                result = await sql`SELECT * FROM pessoas WHERE numerocelular = ${identificador};`;
+                result = await sql`SELECT * FROM del_funcionario WHERE numero_celular = ${identificador};`;
+
+                console.log(result)
 
             } catch (error) {
              
@@ -145,7 +147,7 @@ export class DataBase{
 
             try {
 
-                result = await sql`SELECT * FROM pessoas WHERE email = ${identificador};`;
+                result = await sql`SELECT * FROM del_funcionario WHERE email = ${identificador};`;
             } catch (error) {
 
                 console.log(error);
@@ -158,9 +160,9 @@ export class DataBase{
 
             let hSenha = result[0].senha;
 
-            let hashSaltSenha = await Vdl.removeSalt(hSenha);
+            //let hashSaltSenha = await Vdl.removeSalt(hSenha);
             
-            if(hashSaltSenha === senha){
+            if(hSenha === senha){
                 let objUser = result[0];
                 
                 let user = {
