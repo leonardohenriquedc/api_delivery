@@ -142,53 +142,11 @@ server.post('/login', async (request, response) => {
 server.post('/update', async (request, response)=>{
     let {token} = request.body;
 
-    let decode = validationJwt(token);
+    let decode = await validationJwt(token);
 
     if(decode.status == 200){
 
-        let {type, body} = request.body;
-
-        let value = await dataBase.update(type, body);
-
-        if(value == 204){
-
-            response.status(204).send(decode.token);
-        }else{
-
-            response.status(404).send()
-        }
-    }else{
-
-        response.status(401).send()
-    }
-})
-
-server.post('/cadList', async (request, response) => {
-    let { token, nivel } = request.body;
-
-    let decode = await validationJwt(token);
-
-    console.log(decode);
-
-    if(decode.status == 200 && nivel == 'Administrador'){
-
-        let cad = await dataBase.cadView();
-
-        if(cad.status == 200){
-
-            let obj = {
-                token: decode.token,
-                data: cad.datas
-            }
-
-            response.status(200).send(JSON.stringify(obj));
-        }else{
-
-            response.status(404).send(JSON.stringify({token: decode.token}));
-        }
-    }else{
-
-        response.status(401).send();
+        
     }
 })
 
