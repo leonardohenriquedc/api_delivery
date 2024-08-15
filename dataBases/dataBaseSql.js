@@ -166,9 +166,9 @@ export class DataBase{
                 let objUser = result[0];
                 
                 let user = {
-                    nome: objUser.nome,
+                    nome: objUser.nome_completo,
                     email: objUser.email,
-                    id: objUser.id
+                    id: objUser.id_funcionario
                 }
 
                 return {
@@ -191,50 +191,77 @@ export class DataBase{
         }
     }
 
-    async update(type, body){
-        let newValue = body.newValue;
-        let validation = body.validation;
-        switch(type){
-            case 'e':
-                try {
-                    await sql `UPDATE pessoas SET email  = ${newValue} WHERE senha = ${validation};`;
-                    return 204
-                } catch (error) {
-                    return error
-                }
-                break
+    async update(type, oldIdentifier, newIdentifier, senha){
+        
+        if(type == "email"){
 
-            case 's':
-                try {
-                    await sql `UPDATE pessoas SET senha  = ${newValue} WHERE email = ${validation};`;
-                    return 204
-                } catch (error) {
-                    return error
-                }
-                break
+            try{
+                const resultSearchOne = await sql `
+                    UPDATE del_funcionario 
+                    SET email = ${newIdentifier} 
+                    WHERE email = ${oldIdentifier} 
+                    AND senha = ${senha}
+                `;
 
-            case 'nm': 
-                try {
-                    await sql `UPDATE pessoas SET nome  = ${newValue} WHERE senha = ${validation};`;
-                    return 204
-                } catch (error) {
-                    return error
-                }
-                break
+                if(resultSearchOne.rowCount == 1){
 
-            case 'nr':
-                try {
-                    await sql `UPDATE pessoas SET numerocelular  = ${newValue} WHERE senha = ${validation};`;
-                    return 204
-                } catch (error) {
-                    return error
+                    return true;
+
+                }else{
+
+                    return false;
+
                 }
-                break
+
+            }catch(error){
+
+                console.log(error);
+
+                return false;
+            }
+
+            
+        }else if(type == "number"){
+
+            try {
+                
+                const resultSearchOne = await sql `
+                    UPDATE del_funcionario
+                    SET numero_celular = ${newIdentifier}
+                    WHERE numero_celular = ${oldIdentifier}
+                    AND senha = ${senha}
+                `;
+
+                if(resultSearchOne.rowCount == 1){
+
+                    return true;
+
+                }else{
+
+                    return false;
+
+                }
+
+            } catch (error) {
+                console.log(error);
+
+                return false;
+
+            }
         }
+        
     }
 
     async cadView(){
-        let datas = await sql `SELECT DISTINCT * FROM pessoas JOIN categSeg ON pessoas.cpf = categSeg.keycpf JOIN niveis ON pessoas.cpf = niveis.keycpf;`;
+        let datas = await sql `
+            SELECT DISTINCT * FROM pessoas 
+            JOIN categSeg 
+            ON pessoas.cpf = categSeg.keycpf 
+            JOIN niveis 
+            ON pessoas.cpf = niveis.keycpf;
+        `;
+
+
         if(datas.length != [] && datas.length != undefined && datas.length != null){
             return {
                 status: 200, 

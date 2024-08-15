@@ -13,7 +13,7 @@ let server = fastify({logger: true});
 server.register(fastifyJwt, {
     secret: process.env.SECRET_KEY,
     sign: {
-        expiresIn: '5m'
+        expiresIn: '10m'
     }
 })
 
@@ -22,11 +22,10 @@ async function validationJwt(token){
 
         const vdlToken = server.jwt.verify(token);
 
-        console.log(vdlToken);
+        if(vdlToken.id_funcionario !== undefined){
 
-        if(vdlToken.values.nome !== undefined){
-
-            let newToken = server.jwt.sign({name: vdlToken.name})
+            let newToken = server.jwt.sign({vdlToken})
+            
             return {
                 status: 200, 
                 token: newToken
@@ -112,11 +111,14 @@ server.post('/login', async (request, response) => {
         if(resL.status == 200){ 
 
         const user = resL.user;
-        
+        console.log(user)
+
         try{
             
             const token = server.jwt.sign({
-                values: user
+                nome: user.nome,
+                email: user.email,
+                id: user.id
             });
 
             response.status(200).send({token});
@@ -142,11 +144,59 @@ server.post('/login', async (request, response) => {
 server.post('/update', async (request, response)=>{
     let {token} = request.body;
 
+    console.log("Este e o token enviado" + token);
+
     let decode = await validationJwt(token);
 
     if(decode.status == 200){
 
-        
+        const type = request.body;
+
+            const {oldIdentifier, newIdentifier, senha} = request.body;
+
+            const boResult = Vdl.vdlIdeficadorUp(oldIdentifier, newIdentifier, senha);
+
+            if(boResult){
+                let upData;
+                
+                switch(type){
+
+                    case "email": 
+                        upData = dataBase.update(
+                            "email", 
+                            oldIdentifier, 
+                            newIdentifier, 
+                            senha
+                        );
+                    break
+
+                    case "number": 
+                        upData = dataBase.update(
+                            "number",
+                            oldIdentifier, 
+                            newIdentifier, 
+                            senha
+                        );
+                }
+
+                if(upData){
+
+                    response.status(204).send(decode.token);
+
+                }else{
+
+                    response.status(404).send(decode.token + "Erro de execulção");
+
+                }
+            }else{
+
+                response.status(404).send(decode.token + "Formato invalido");
+
+            }
+    }else{
+
+        response.status(401).send("Token invalido");
+
     }
 })
 
@@ -157,15 +207,8 @@ server.post('/delete', async(request, response) => {
 
     if(decode.status == 200){
 
-        let dataDelete = await dataBase.delete(value);
-
-        if(dataDelete.status == 200){
-
-            response.status(200).send(decode.token);
-        }else{
-
-            response.status(404).send({token: decode.token, error: dataDelete.error});
-        }
+        
+        
     }else{
 
         response.status(401).send();

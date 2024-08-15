@@ -1,3 +1,4 @@
+import { info } from "console";
 import { sql } from "../config/connection.js";
 import crytpo from 'crypto';
 
@@ -43,7 +44,7 @@ export class Vdl{
     }
 
     static vdlCreateCliente(infos){
-
+        
     }
 
     static vdlIdeficador(infos){
@@ -56,24 +57,80 @@ export class Vdl{
         const regexSenha = /^[\p{L}0-9\s]+$/u.test(senha);
 
         //Regex para validar se há somente numeros em uma string
-        const RegexVdlNumber = /^\d+$/.test(identificador);
+        const regexVdlNumber = /^\d+$/.test(identificador);
 
         // Expressão regular para validar e-mail
-        const RegexVdlEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identificador);
+        const regexVdlEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identificador);
 
-        if(RegexVdlNumber && regexSenha && identificador.length === 11){
-            console.log(RegexVdlNumber, "deu bom pelo visto")
+        if(regexVdlNumber && regexSenha && identificador.length === 11){
 
-            return {status: 200, type: "number"}
+            console.log(regexVdlNumber, "deu bom pelo visto")
+
+            return {
+                status: 200, 
+
+                type: "number"
+            }
             
-        }else if(RegexVdlEmail && regexSenha){
+        }else if(regexVdlEmail && regexSenha){
             
-            return {status: 200, type: "email"}
+            return {
+                status: 200, 
+
+                type: "email"
+            }
+
         }else{
-            console.log("Este e os resultados do regex")
-            console.log("Teste hash " + hashTest + "Regex Numero:" + RegexVdlNumber);
+
+            console.log("Este e os resultados do regex");
+
+            console.log("Teste hash " + hashTest + "Regex Numero:" + regexVdlNumber);
 
             return {status: 404}
+        }
+    }
+
+    static vdlIdeficadorUp(infos){
+
+        let {oldIdentifier, newIdentifier, senha} = infos;
+
+        // Expressão regular para validar se há somente numero e letras na string senha 
+        const regexSenha = /^[\p{L}0-9\s]+$/u.test(senha);
+
+        //Regex para validar se há somente numeros em uma string
+        const regexVdlNumber = /^\d+$/;
+
+        // Expressão regular para validar e-mail
+        const regexVdlEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if(
+            regexSenha && 
+
+            regexVdlNumber.test(oldIdentifier) && 
+
+            regexVdlNumber.test(newIdentifier) && 
+
+            identificadorUm.length == 11 && 
+
+            identificadorDois.length == 11
+        ){
+            
+            return true;
+
+        }else if(
+            regexSenha && 
+
+            regexVdlEmail.test(oldIdentifier) && 
+
+            regexVdlEmail.test(newIdentifier)
+        ){
+
+            return true;
+
+        }else{
+
+            return false;
+
         }
     }
 }
