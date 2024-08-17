@@ -45,17 +45,16 @@ export class DataBase{
 
             try {
                 
-                const vdlUniqueData = await sql `SELECT * FROM pessoas WHERE cpf = ${cpf}`;
+                const vdlUniqueData = await sql `SELECT * FROM del_funcionario WHERE cpf = ${cpf}`;
                 console.log("Este e o valor enviado: " + vdlUniqueData)
                 if(vdlUniqueData.length === 0){
 
-                    const insertInfoPessoais = await sql `INSERT INTO pessoas(
-                        nome, 
+                    const insertInfoPessoais = await sql `INSERT INTO del_funcionario(
+                        nome_completo, 
                         cpf, 
-                        numeroCelular, 
+                        numero_celular, 
                         senha, 
-                        dataCadastro, 
-                        id_cargoFuncao, 
+                        data_cadastro,
                         email
                     )
                     VALUES (
@@ -63,27 +62,26 @@ export class DataBase{
                         ${cpf}, 
                         ${numeroCelular}, 
                         ${senha}, 
-                        ${data}, 
-                        ${nivel.id_cargoFuncao}, 
+                        ${data},
                         ${email}
                     )
-                    RETURNING id_pessoas`;
+                    RETURNING id_funcionario`;
     
-                    const idPessoa = insertInfoPessoais[0].id_pessoas
+                    const idPessoa = insertInfoPessoais[0].id_funcionario;
                 
                     console.log(idPessoa);
     
-                    const consultCadPessoa = await sql `SELECT * FROM pessoas WHERE id_pessoas = ${idPessoa};`;
+                    const consultCadPessoa = await sql `SELECT * FROM del_funcionario WHERE id_funcionario = ${idPessoa};`;
 
                     if(consultCadPessoa[0].cpf === cpf){
 
-                        await sql `INSERT INTO endereco(
-                                ruaAv, 
-                                numeroCasa, 
+                        await sql `INSERT INTO del_endereco(
+                                rua, 
+                                numero, 
                                 bairro, 
-                                BlocoQuadraLote, 
+                                bloco_quadra_lote, 
                                 cep, 
-                                id_pessoa
+                                id_funcionario
                             )
                             VALUES(
                                 ${ruaAv},
