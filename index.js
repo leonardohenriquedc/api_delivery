@@ -9,7 +9,7 @@ dotenv.config()
 let dataBase = new DataBase();
 
 let server = fastify({logger: true});
-
+ 
 server.register(fastifyJwt, {
     secret: process.env.SECRET_KEY,
     sign: {
