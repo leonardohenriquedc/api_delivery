@@ -7,7 +7,7 @@ export class DataBase{
     async functionsCreate(){
         try {
             
-            let cargofuncao = await sql`SELECT * FROM cargofuncao`;
+            let cargofuncao = await sql`SELECT * FROM del_setor`;
 
             if(cargofuncao.length != [] && cargofuncao.length != undefined && cargofuncao.length != null){
 
