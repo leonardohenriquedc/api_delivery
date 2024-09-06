@@ -250,30 +250,6 @@ export class DataBase{
         
     }
 
-    async cadView(){
-        let datas = await sql `
-            SELECT DISTINCT * FROM pessoas 
-            JOIN categSeg 
-            ON pessoas.cpf = categSeg.keycpf 
-            JOIN niveis 
-            ON pessoas.cpf = niveis.keycpf;
-        `;
-
-
-        if(datas.length != [] && datas.length != undefined && datas.length != null){
-            return {
-                status: 200, 
-                datas: datas
-            }
-        }else{
-            return {
-                
-                status: 404
-            
-            }
-        }
-    }
-
     async delete(value){
         try {
             await sql `DELETE FROM niveis WHERE keyCPF = ${value};`;
